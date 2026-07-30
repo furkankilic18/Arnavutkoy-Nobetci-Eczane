@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Contrat\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Entity\Entities.csproj" />
   </ItemGroup>
 
