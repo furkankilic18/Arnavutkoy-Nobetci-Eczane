@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Entity/Entity.csproj" />
+  <Project Path="Presentations/Presentations.csproj" />
+  <Project Path="Repository/Repository.csproj" />
+  <Project Path="Services/Services.csproj" />
+  <Project Path="Web API/Web API.csproj" />
+</Solution>
