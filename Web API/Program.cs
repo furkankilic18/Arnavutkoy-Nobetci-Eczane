@@ -1,3 +1,4 @@
+using Presentations.Controller;
 using Web_API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,8 @@ builder.Services.ConfigureSqlContext(builder.Configuration);
 builder.Services.ConfigureRepositoryManager();
 builder.Services.ConfigureServiceManager();
 builder.Services.AddHttpClient();
-
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(PharmaciesController).Assembly);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
