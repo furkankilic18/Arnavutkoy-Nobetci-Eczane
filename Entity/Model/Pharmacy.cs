@@ -13,8 +13,8 @@ namespace Entities.Model
         public string Location { get; set; }
 
         public int DistrictId { get; set; }
-        public District District { get; set; }
+        public District? District { get; set; }
 
-        public ICollection<Duty> Duties { get; set; }
+        public ICollection<Duty>? Duties { get; set; }
     }
 }

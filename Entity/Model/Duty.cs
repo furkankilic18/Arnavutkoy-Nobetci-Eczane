@@ -11,6 +11,6 @@ namespace Entities.Model
         public DateTime EndTime { get; set; }
 
         public int PharmacyId { get; set; }
-        public Pharmacy Pharmacy { get; set; }
+        public Pharmacy? Pharmacy { get; set; }
     }
 }
