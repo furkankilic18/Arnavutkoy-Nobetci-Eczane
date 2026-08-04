@@ -17,7 +17,6 @@ namespace Presentations.Controller
             _serviceManager = serviceManager;
         }
 
-        // İstek: POST api/pharmacies/async?city=Istanbul&district=Arnavutkoy
         [HttpPost("async")]
         public async Task<IActionResult> SyncPharmacy([FromQuery] string city, [FromQuery] string district)
         {
@@ -31,6 +30,29 @@ namespace Presentations.Controller
                 return StatusCode(500, $"Sunucu hatası: {ex.Message}");
             }
         }
+
+
+        [HttpGet("todays-duties")]
+        public async Task<IActionResult> GetTodaysDuties([FromQuery] string city, [FromQuery] string district)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(district))
+                    return BadRequest("Şehir (city) ve İlçe (district) parametreleri zorunludur.");
+
+                
+                var pharmacies = await _serviceManager.PharmacyService.GetTodaysDutyPharmaciesAsync(city, district, trackChanges: false);
+
+                return Ok(pharmacies);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Sunucu Hatası: {ex.Message}");
+            }
+        }
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetAllPharmacies()

@@ -23,21 +23,19 @@ namespace Services
             _httpClient = httpClient;
         }
 
-        
+
         public async Task SyncDutyPharmaciesAsync(string city, string district)
         {
-            // 1. COLLECT API'DEN VERİ ÇEKME
+            // 1. Dış API Entegrasyonu: İlgili il ve ilçe için nöbetçi eczane verilerinin talep edilmesi.
             var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.collectapi.com/health/dutyPharmacy?ilce={district}&il={city}");
 
             request.Headers.Add("authorization", "apikey 4joAhGdnxlWmA0vOrtJnJR:3xk6YYwXNLdD6aV8hvRf3N");
-            request.Headers.Add("content-type", "application/json");
-
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var jsonString = await response.Content.ReadAsStringAsync();
 
-            // 2. JSON VERİSİNİ DTO'YA ÇEVİRME (DESERIALIZATION)
+            // 2. Deserialization: JSON yanıtının DTO nesnesine dönüştürülmesi ve validasyonu.
             var apiResult = JsonSerializer.Deserialize<CollectApiResultDto>(jsonString);
 
             if (apiResult == null || !apiResult.Success || apiResult.Result == null)
@@ -45,7 +43,8 @@ namespace Services
                 throw new Exception("API'den veri çekilemedi veya sonuç başarısız.");
             }
 
-            // 3. UPSERT ALGORİTMASI (İl ve İlçe Kontrolü)
+            // 3. Lokasyon Upsert (Update/Insert) İşlemleri
+            // İl kontrolü: Yoksa veritabanına ekle.
             var cityEntity = await _repositoryManager.City.FindByCondition(c => c.Name == city, trackChanges: true).FirstOrDefaultAsync();
             if (cityEntity == null)
             {
@@ -54,6 +53,7 @@ namespace Services
                 await _repositoryManager.SaveAsync();
             }
 
+            // İlçe kontrolü: İlgili ilin altında yoksa veritabanına ekle.
             var districtEntity = await _repositoryManager.District.FindByCondition(d => d.Name == district && d.CityId == cityEntity.Id, trackChanges: true).FirstOrDefaultAsync();
             if (districtEntity == null)
             {
@@ -62,12 +62,14 @@ namespace Services
                 await _repositoryManager.SaveAsync();
             }
 
-            // 4. ECZANE VE NÖBET KAYITLARININ İŞLENMESİ
+            // 4. Eczane ve Nöbet Süreçlerinin İşlenmesi
+            // Nöbet periyodu: Bugün 18:00 - Yarın 08:30
             DateTime startTime = DateTime.Today.AddHours(18);
             DateTime endTime = DateTime.Today.AddDays(1).AddHours(8).AddMinutes(30);
 
             foreach (var apiPharmacy in apiResult.Result)
             {
+                // Eczane Upsert İşlemi
                 var pharmacyEntity = await _repositoryManager.Pharmacy
                     .FindByCondition(p => p.Name == apiPharmacy.Name && p.DistrictId == districtEntity.Id, trackChanges: true)
                     .FirstOrDefaultAsync();
@@ -83,10 +85,11 @@ namespace Services
                         DistrictId = districtEntity.Id
                     };
                     await _repositoryManager.Pharmacy.CreatePharmacyAsync(pharmacyEntity);
-                    await _repositoryManager.SaveAsync();
+                    await _repositoryManager.SaveAsync(); // Bağımlı nöbet kaydı için ID üretilmesi sağlanır.
                 }
 
-                // 5. NÖBET KAYDINI EKLE
+                // 5. Nöbet (Duty) Kaydının Oluşturulması
+                // Mükerrer kaydı önlemek için ilgili eczanenin bu başlangıç saatinde nöbeti olup olmadığı kontrol edilir.
                 var dutyExists = await _repositoryManager.Duty
                     .FindByCondition(d => d.PharmacyId == pharmacyEntity.Id && d.StartTime == startTime, trackChanges: false)
                     .AnyAsync();
@@ -103,10 +106,39 @@ namespace Services
                 }
             }
 
+            // Tüm nöbet atamalarını tek bir transaction bütünlüğünde (Unit of Work) veritabanına yansıt.
             await _repositoryManager.SaveAsync();
         }
 
-        
+        public async Task<IEnumerable<Pharmacy>> GetTodaysDutyPharmaciesAsync(string city, string district, bool trackChanges)
+        {
+            DateTime startTime = DateTime.Today.AddHours(18);
+
+            // 1. Önbellek/Senkronizasyon Kontrolü: İlgili bölge için bugüne ait nöbet verisi veritabanında mevcut mu?
+            bool isSyncedToday = await _repositoryManager.Duty
+                .FindByCondition(d => d.StartTime == startTime &&
+                                      d.Pharmacy.District.Name == district &&
+                                      d.Pharmacy.District.City.Name == city, trackChanges: false)
+                .AnyAsync();
+
+            // 2. Senkronizasyon Tetikleme (Lazy Fetch): Veri yoksa API kotalarını optimize etmek adına yalnızca bir kez dış servise gidilir.
+            if (!isSyncedToday)
+            {
+                await SyncDutyPharmaciesAsync(city, district);
+            }
+
+            // 3. Veri Sunumu: Güncel nöbetçi eczane listesinin veritabanından çekilmesi.
+            var todaysPharmacies = await _repositoryManager.Pharmacy
+                .FindByCondition(p => p.District.Name == district &&
+                                      p.District.City.Name == city &&
+                                      p.Duties.Any(duty => duty.StartTime == startTime), trackChanges)
+                .ToListAsync();
+
+            return todaysPharmacies;
+        }
+
+
+
 
         public async Task<Pharmacy> CreatePharmacyAsync(Pharmacy pharmacy)
         {

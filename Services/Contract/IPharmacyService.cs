@@ -9,6 +9,7 @@ namespace Services.Contract
     {
         //Dış API den veri senkronizasyonu
         Task SyncDutyPharmaciesAsync(string city, string district);
+        Task<IEnumerable<Pharmacy>> GetTodaysDutyPharmaciesAsync(string city, string district, bool trackChanges);
 
         //Temel CRUD işlemleri ilerde lazım olma ihtialine karşı
         Task<IEnumerable<Pharmacy>> GetAllPharmaciesAsync(bool trackChanges);
