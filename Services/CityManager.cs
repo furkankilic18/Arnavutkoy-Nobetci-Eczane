@@ -51,15 +51,15 @@ namespace Services
 
         public async Task UpdateOneCityAsync(int id, City city)
         {
-            if (city is null)
-                throw new ArgumentNullException(nameof(city), "Güncellemek istenen şehir boş olamaz. işlem iptal edildi.");
+            if (city is null) throw new ArgumentNullException(nameof(city), "Güncellemek istenen şehir boş olamaz.");
 
             var entity = await _repositoryManager.City.GetCityByIdAsync(id, trackChanges: true);
-            if (entity is null)
-                throw new Exception($"Verilen {id} numaralı Id'ye sahip şehir bulunamadı.");
-            _repositoryManager.City.UpdateCity(city);
-            await _repositoryManager.SaveAsync();
+            if (entity is null) throw new Exception($"Verilen {id} numaralı Id'ye sahip şehir bulunamadı.");
 
+            entity.Name = city.Name;
+
+            _repositoryManager.City.UpdateCity(entity);
+            await _repositoryManager.SaveAsync();
         }
     }
 }

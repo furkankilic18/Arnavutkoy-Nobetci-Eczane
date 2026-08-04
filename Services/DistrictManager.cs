@@ -49,12 +49,13 @@ namespace Services
 
         public async Task UpdateOneDistrictAsync(int id, District district)
         {
-            if (district is null)
-                throw new ArgumentNullException(nameof(district), "Güncellemek istenen ilçe boş olamaz. İşlem iptal edildi.");
+            if (district is null) throw new ArgumentNullException(nameof(district), "Güncellemek istenen ilçe boş olamaz.");
 
             var entity = await _repositoryManager.District.GetDistrictByIdAsync(id, trackChanges: true);
-            if (entity is null)
-                throw new Exception($"Verilen {id} numaralı Id'ye sahip ilçe bulunamadı.");
+            if (entity is null) throw new Exception($"Verilen {id} numaralı Id'ye sahip ilçe bulunamadı.");
+
+            entity.Name = district.Name;
+            entity.CityId = district.CityId;
 
             _repositoryManager.District.UpdateDistrict(entity);
             await _repositoryManager.SaveAsync();

@@ -49,12 +49,14 @@ namespace Services
 
         public async Task UpdateOneDutyAsync(int id, Duty duty)
         {
-            if (duty is null)
-                throw new ArgumentNullException(nameof(duty), "Güncellemek istenen nöbet boş olamaz. İşlem iptal edildi.");
+            if (duty is null) throw new ArgumentNullException(nameof(duty), "Güncellemek istenen nöbet boş olamaz.");
 
             var entity = await _repositoryManager.Duty.GetDutyByIdAsync(id, trackChanges: true);
-            if (entity is null)
-                throw new Exception($"Verilen {id} numaralı Id'ye sahip nöbet bulunamadı.");
+            if (entity is null) throw new Exception($"Verilen {id} numaralı Id'ye sahip nöbet bulunamadı.");
+
+            entity.StartTime = duty.StartTime;
+            entity.EndTime = duty.EndTime;
+            entity.PharmacyId = duty.PharmacyId;
 
             _repositoryManager.Duty.UpdateDuty(entity);
             await _repositoryManager.SaveAsync();
