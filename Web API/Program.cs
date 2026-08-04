@@ -13,7 +13,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(PharmaciesController).Assembly);
 
-builder.Services.AddControllers();
+builder.Services.ConfigureCors();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -26,6 +27,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 
