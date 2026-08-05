@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nöbetçi Eczaneler | Arnavutköy Belediyesi</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="stripe"></div>
+
+<header>
+    <div class="brand">
+        <!-- Klasördeki logo.png'yi arar. Bulamazsa onerror tetiklenir ve yedek tasarım açılır -->
+        <img src="logo.png" alt="Arnavutköy Belediyesi" class="official-logo" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+        
+        <!-- Resim yokken görünecek şık yedek logo -->
+        <div id="logo-fallback" style="display: none; align-items: center; gap: 12px;">
+            <div style="width: 45px; height: 45px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-building-columns text-white" style="font-size: 20px;"></i>
+            </div>
+            <div>
+                <div style="font-family: 'Sora', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.5px;">ARNAVUTKÖY</div>
+                <div style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 12px; color: #b9cbe0; letter-spacing: 1px;">BELEDİYESİ</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="header-right">
+        <div class="date-chip"><i class="fa-regular fa-calendar"></i><span id="date-text">—</span></div>
+        <a href="tel:4444597" class="phone-chip"><i class="fa-solid fa-phone"></i> 444 4 597</a>
+    </div>
+</header>
+
+<div class="title-band">
+    <div class="title-content">
+        <h1>Nöbetçi Eczaneler</h1>
+        <p>Arnavutköy ilçemiz sınırları içerisinde bugün hizmet veren nöbetçi eczanelerin listesi ve harita konumları.</p>
+    </div>
+</div>
+
+<div class="layout">
+    <div class="list-panel" id="pharmacy-list">
+        <div class="state-msg" id="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i>Nöbetçi eczaneler yükleniyor...</div>
+    </div>
+
+    <div class="map-panel">
+        <div id="map"></div>
+        <div class="map-legend">
+            <div class="legend-e-icon">E</div> Nöbetçi eczane konumu
+        </div>
+    </div>
+</div>
+
+<footer>
+    <span><strong>Arnavutköy Belediyesi</strong> Çözüm Merkezi</span>
+    <span class="divider">|</span>
+    <span><i class="fa-solid fa-phone" style="margin-right:5px;"></i>444 4 597</span>
+    <span class="divider">|</span>
+    <span><i class="fa-brands fa-whatsapp" style="margin-right:5px;"></i>0530 919 50 00</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
